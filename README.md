@@ -2,6 +2,8 @@
 
 *The sinopia guides the fresco: write docs, get code.*
 
+📜 [Read the story of sinopia (PDF)](https://github.com/Robin-Short/sinopia/releases/latest/download/sinopia.pdf)
+
 In fresco painting, the *sinopia* is the drawing traced in red earth on the wall, underneath the painting. Here the sinopia is `docs/`, a plain-language description of your application, and the fresco is `project/`, its code. [Claude Code](https://claude.com/claude-code) is the workshop that paints one over the other.
 
 You don't need to know how to code. Instead of chatting with an AI, you describe what you want in `docs/`. The description stays with your project, and the code always matches it.
