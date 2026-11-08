@@ -10,7 +10,13 @@ You don't need to know how to code. Instead of chatting with an AI, you describe
 
 Don't fork this repository: click **Use this template** to make your own copy. It can be private, and it has no ties to this one.
 
-You need Git and Claude Code, installed and signed in. Then:
+You need Git and **Claude Code in the terminal**: the `claude` command. The Claude desktop app alone doesn't install it, even though it has a Code section. Install it once with:
+
+```
+curl -fsSL https://claude.ai/install.sh | bash
+```
+
+then open a new terminal and run `claude` once to sign in. `claude --version` should now print a version number. Then:
 
 1. Clone your new repository.
 2. **Draw.** Describe your application in `docs/`. Start small: one page is enough.

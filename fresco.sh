@@ -121,7 +121,12 @@ paint() { # mode
     giornata/*) die "giornata #${b#giornata/} is still waiting for your review. Try it, then run ./fresco.sh approve or ./fresco.sh discard." ;;
     "") die "git is not on a branch. Switch back to your wall first (git switch main)." ;;
   esac
-  command -v "$CLAUDE" >/dev/null 2>&1 || die "Claude Code is not installed: see https://claude.com/claude-code"
+  command -v "$CLAUDE" >/dev/null 2>&1 || die "the claude command was not found. sinopia needs Claude Code in the terminal
+(the Claude desktop app alone doesn't install it). Install it with:
+
+    curl -fsSL https://claude.ai/install.sh | bash
+
+then open a new terminal, run 'claude' once to sign in, and run ./fresco.sh again."
   local outside; outside="$(git status --porcelain --untracked-files=all -- . ':(exclude)docs')"
   [ -z "$outside" ] || die "there are changes outside docs/:
 $outside
