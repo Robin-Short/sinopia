@@ -70,7 +70,8 @@ This is a repaint: project/ has been emptied. Paint the whole application again 
 
 This is another attempt at the same giornata. $4"
   fi
-  "$CLAUDE" -p "$prompt" --permission-mode acceptEdits \
+  # exec: the background job *is* the workshop, so Ctrl+C can stop it for real
+  exec "$CLAUDE" -p "$prompt" --permission-mode acceptEdits \
     --allowedTools "${ALLOW[@]}" --disallowedTools "${DENY[@]}"
 }
 
@@ -84,6 +85,36 @@ guard() { # n start snapshot
   while IFS= read -r f; do
     if [ -n "$f" ] && ! is_own "$f"; then put_back "$3" "$f"; say note "the workshop changed $f, which is yours: put back"; fi
   done
+}
+
+# One line, rewritten every few seconds while the workshop paints:
+#   painting   3 min 12 s · 6 files · last: app/style.css
+progress() { # pid
+  [ -t 1 ] || return 0
+  local t0 now el files last line cols
+  t0="$(date +%s)"; cols="$(tput cols 2>/dev/null || echo 80)"
+  while kill -0 "$1" 2>/dev/null; do
+    now="$(date +%s)"; el=$(( now - t0 ))
+    if [ "$el" -ge 60 ]; then el="$(( el / 60 )) min $(( el % 60 )) s"; else el="$el s"; fi
+    files="$(git status --porcelain --untracked-files=all -- project | wc -l | tr -d ' ' || true)"
+    line="$el · $files files"
+    if [ "$files" -gt 0 ]; then
+      last="$(git ls-files -m -o --exclude-standard -z -- project | xargs -0 ls -t 2>/dev/null | head -n 1 | sed 's#^project/##' || true)"
+      [ -z "$last" ] || line="$line · last: $last"
+    fi
+    [ "${#line}" -le $(( cols - 16 )) ] || line="${line:0:$(( cols - 17 ))}…"
+    printf '\r  %-9s  %s\033[K' painting "$line"
+    sleep 3
+  done
+  printf '\r\033[K'
+}
+
+# Ctrl+C while the workshop paints: stop it, and leave the wall as it was.
+interrupted() {
+  trap - INT TERM
+  [ -z "${CUR_PID:-}" ] || { kill "$CUR_PID" 2>/dev/null || true; wait "$CUR_PID" 2>/dev/null || true; }
+  printf '\r\033[K'
+  abandon "$CUR_N" "$CUR_SNAP" "stopped by you"
 }
 
 run_tests() {
@@ -169,9 +200,16 @@ The workshop is the only one who paints project/. Undo these changes, or commit 
   fi
 
   local attempt=0; FEEDBACK=""
-  say painting "the workshop is at work (this takes a while)"
+  say painting "the workshop is at work (this takes a while; Ctrl+C stops it cleanly)"
+  CUR_N="$n"; CUR_SNAP="$snapshot"
+  trap interrupted INT TERM
   while :; do
-    if ! workshop "$n" "$base" "$mode" "$FEEDBACK" >>"$log" 2>&1; then
+    workshop "$n" "$base" "$mode" "$FEEDBACK" >>"$log" 2>&1 &
+    CUR_PID=$!
+    progress "$CUR_PID"
+    local rc=0; wait "$CUR_PID" || rc=$?
+    CUR_PID=""
+    if [ "$rc" -ne 0 ]; then
       tail -n 5 "$log" | sed 's/^/             /'
       abandon "$n" "$snapshot" "the workshop stopped with an error"
     fi

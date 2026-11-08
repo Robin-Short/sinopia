@@ -44,12 +44,14 @@ Each run of `./fresco.sh` is a *giornata*, the patch of fresh plaster a fresco p
 4. `fresco.sh` runs the tests itself. If some fail, the workshop keeps painting, up to two more attempts. If they still fail, nothing is set and the wall stays as it was.
 5. When every example holds, the giornata is committed on its branch and waits for you.
 
+While the workshop paints, one line keeps you posted: time spent, files touched so far, the last one. Painting a first giornata can take several minutes. Ctrl+C stops it, and the wall stays as it was.
+
 ```
 $ ./fresco.sh
 
   sinopia    1 changed: lending.md
   plaster    new giornata #14, on its own branch
-  painting   the workshop is at work (this takes a while)
+  painting   the workshop is at work (this takes a while; Ctrl+C stops it cleanly)
   painting   project/ updated, 7 files
   checking   12 of 12 examples hold
   ready      giornata #14 is waiting for your review: "Loans last three weeks"
